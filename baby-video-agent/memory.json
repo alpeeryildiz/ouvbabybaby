@@ -1,0 +1,10 @@
+{
+  "Luna the Cat": {
+    "traits": ["curious", "loves stars", "asks many questions"],
+    "episodes": ["colors", "the moon"]
+  },
+  "Max the Dog": {
+    "traits": ["playful", "likes running", "likes numbers"],
+    "episodes": ["colors", "counting to 3"]
+  }
+}
