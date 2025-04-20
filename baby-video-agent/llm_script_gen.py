@@ -9,11 +9,9 @@ import os
 load_dotenv()
 
 llm = HuggingFaceHub(
-    repo_id="mistralai/Mistral-7B-Instruct-v0.2",
-    model_kwargs={
-        "temperature": 0.7,
-        "max_new_tokens": 512
-    },
+    repo_id="tiiuae/falcon-7b-instruct",
+    model_kwargs={"temperature": 0.7, "max_new_tokens": 512}
+
     huggingfacehub_api_token=os.environ["HUGGINGFACEHUB_API_TOKEN"]
 )
 
