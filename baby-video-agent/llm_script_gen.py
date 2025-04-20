@@ -3,7 +3,7 @@ import json
 from dotenv import load_dotenv
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableSequence
-from langchain_community.chat_models import HuggingFaceHub
+from langchain_community.llms import HuggingFaceHub
 import os
 
 load_dotenv()
