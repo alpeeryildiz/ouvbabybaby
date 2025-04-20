@@ -1,56 +1,44 @@
-import os
-import json
-from dotenv import load_dotenv
+from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate
-from langchain_core.runnables import RunnableSequence
-from langchain_community.llms import HuggingFaceHub
+from langchain_huggingface import HuggingFaceEndpoint
 import os
 
-load_dotenv()
+# Output will be parsed into structured JSON
+parser = JsonOutputParser()
 
-llm = HuggingFaceHub(
-    repo_id="tiiuae/falcon-7b-instruct",
-    model_kwargs={"temperature": 0.7, "max_new_tokens": 512}
 
-    huggingfacehub_api_token=os.environ["HUGGINGFACEHUB_API_TOKEN"]
+llm = HuggingFaceEndpoint(
+    repo_id="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+    task="text-generation",  # 👈 ADD THIS
+    huggingfacehub_api_token=os.environ["HUGGINGFACEHUB_API_TOKEN"],
+    temperature=0.7,
+    max_new_tokens=512,
 )
 
-template = PromptTemplate.from_template("""
-You are a children's scriptwriter for a baby video series.
+# PromptTemplate (with escaped curly braces in example)
+prompt_template = PromptTemplate.from_template(
+    """
+You are a script writer for a baby educational video assistant.
+Create a list of scenes, each a JSON object with:
+- "narration": what the narrator says
+- "scene": a short visual description (less than 1 line)
 
-Characters:
-{characters}
-Context: {character_traits}
+Output must be a valid JSON list like:
+[
+  {{"narration": "Hi! I'm Max the Dog. Today we'll learn colors!", "scene": "Max the Dog jumping in red puddle."}},
+  {{"narration": "This is RED! Can you say red?", "scene": "Red circle filling the screen with sparkle animation."}}
+]
 
-Generate a script for the topic "{topic}".
-Structure it into short scenes with narration.
-Use this format:
-Scene 1: ...
-Narration: ...
-""")
+Topic: {topic}
+Characters: {characters}
+Only return the JSON array. No commentary.
+"""
+)
 
-def load_character_memory(characters):
-    memory = {}
-    with open("memory.json", "r") as f:
-        all_mem = json.load(f)
-    for c in characters.split(" and "):
-        info = all_mem.get(c.strip(), {})
-        memory[c.strip()] = info
-    return memory
+# Combine prompt -> LLM -> parser
+full_prompt = prompt_template | llm | parser
 
-def format_traits(memory_dict):
-    traits = []
-    for char, mem in memory_dict.items():
-        t = ', '.join(mem.get("traits", []))
-        traits.append(f"{char} is {t}")
-    return ". ".join(traits)
+def generate_script(topic, characters):
+    print(f"🧠 Generating script for: {topic} with {', '.join(characters)}")
+    return full_prompt.invoke({"topic": topic, "characters": ", ".join(characters)})
 
-def generate_script(topic: str, characters: str) -> str:
-    mem = load_character_memory(characters)
-    traits_str = format_traits(mem)
-    full_prompt = template | llm
-    return full_prompt.invoke({
-        "topic": topic,
-        "characters": characters,
-        "character_traits": traits_str
-    }).content

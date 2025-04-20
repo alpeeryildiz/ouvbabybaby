@@ -1,14 +1,6 @@
-def extract_scene_prompts(script: str):
+def extract_scene_prompts(script):
     scenes = []
-    current = {}
-    for line in script.splitlines():
-        line = line.strip()
-        if line.startswith("Scene"):
-            if current:
-                scenes.append(current)
-            current = {"scene": line.replace("Scene", "").strip(), "narration": ""}
-        elif line.lower().startswith("narration"):
-            current["narration"] = line.split(":", 1)[1].strip()
-    if current:
-        scenes.append(current)
+    for scene in script:
+        if isinstance(scene, dict) and 'narration' in scene and 'scene' in scene:
+            scenes.append(scene)
     return scenes
