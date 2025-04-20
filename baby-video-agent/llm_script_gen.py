@@ -3,10 +3,19 @@ import json
 from dotenv import load_dotenv
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableSequence
-from langchain_openai import ChatOpenAI
+from langchain_community.chat_models import HuggingFaceHub
+import os
 
 load_dotenv()
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7)
+
+llm = HuggingFaceHub(
+    repo_id="mistralai/Mistral-7B-Instruct-v0.2",
+    model_kwargs={
+        "temperature": 0.7,
+        "max_new_tokens": 512
+    },
+    huggingfacehub_api_token=os.environ["HUGGINGFACEHUB_API_TOKEN"]
+)
 
 template = PromptTemplate.from_template("""
 You are a children's scriptwriter for a baby video series.
